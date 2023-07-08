@@ -1,0 +1,4 @@
+/chatapp_server/env/
+/chatapp_server/.idea/
+/chatapp_server/.env
+/chatapp_server/db.sqlite3
