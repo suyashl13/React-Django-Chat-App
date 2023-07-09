@@ -12,5 +12,10 @@ import os
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatapp_server.settings')
+from channels.routing import ProtocolTypeRouter, URLRouter
 
-application = get_asgi_application()
+django_asgi_application = get_asgi_application()
+
+application = ProtocolTypeRouter({
+    "http": django_asgi_application,
+})
