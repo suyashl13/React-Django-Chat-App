@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from chat.models import Chat, Room
 from chat.serializers import ChatSerializer, RoomSerializer
 from users.models import CustomUser
-from users.serializers import CustomUserSerializer
 
 
 # Create your views here.
@@ -33,7 +32,37 @@ def room_router(request: HttpRequest):
         return paginator.get_paginated_response(response)
 
     if request.method == 'POST':
-        nw_room = Room()
-        nw_room.created_user = request.user
 
-        return JsonResponse({})
+        try:
+            assert 'added_username' in request.POST.keys(), "Please provide a user to add."
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "message": str(e)
+            }, status=400)
+
+        try:
+            added_user = CustomUser.objects.filter(username=request.POST.get('added_username'))
+            assert len(added_user) != 0, "User not found!"
+
+            existance = len(Room.objects.filter(created_user=request.user, added_user=added_user[0])) > 0
+            assert existance, "Room already exists."
+
+            nw_room = Room(created_user=request.user, added_user=added_user[0])
+            nw_room.save()
+
+            return JsonResponse({
+                "success": True,
+                "data": RoomSerializer(nw_room).data
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "message": str(e)
+            }, status=400)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def chat_router(requset: HttpRequest):
+    pass
